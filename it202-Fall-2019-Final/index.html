@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>IT202 Fall 2019 - Final</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <style>
+      body {margin: 0;}
+      :root {
+        --mdc-theme-primary: #001E62;
+      }
+      .template {display:none;}
+      .mdc-dialog__container {margin:5px;}
+      .mdc-typography--headline5  {text-align:center;}
+        
+    </style>
+
+
+  </head>
+  <body>
+     <aside class="mdc-drawer mdc-drawer--modal" data-mdc-auto-init="MDCDrawer">
+    <div class="mdc-drawer__content">
+      <nav class="mdc-list">
+        <a class="mdc-list-item mdc-list-item--activated" href="#schools" aria-current="page">
+<!--           <i class="material-icons mdc-list-item__graphic" aria-hidden="true">inbox</i> -->
+          <span class="mdc-list-item__text">Search Schools</span>
+        </a>
+        <a class="mdc-list-item" href="#apod">
+<!--           <i class="material-icons mdc-list-item__graphic" aria-hidden="true">send</i> -->
+          <span class="mdc-list-item__text">APOD</span>
+        </a>
+          
+        <a class="mdc-list-item" href="#settings">
+<!--           <i class="material-icons mdc-list-item__graphic" aria-hidden="true">send</i> -->
+          <span class="mdc-list-item__text">Settings</span>
+        </a>          
+
+      </nav>
+    </div>
+  </aside>
+
+  <div class="mdc-drawer-scrim"></div>
+
+    <header class="mdc-top-app-bar">
+  <div class="mdc-top-app-bar__row">
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+      <button class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">menu</button>
+      <span class="mdc-top-app-bar__title">Your UIN Here </span>
+    </section>
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
+    </section>
+  </div>
+</header>
+
+<div class="mdc-drawer-app-content mdc-top-app-bar--fixed-adjust" id="content">
+       
+<div id="map"></div>
+
+
+</div>
+<div id="modalTransaction"
+    class="mdc-dialog"
+     role="alertdialog"
+     aria-modal="true"
+     aria-labelledby="my-dialog-title"
+     aria-describedby="my-dialog-content"
+     data-mdc-auto-init="MDCDialog">
+  <div class="mdc-dialog__container">
+    <div class="mdc-dialog__surface">
+      <!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+      <h2 class="mdc-dialog__title" id="my-dialog-title">
+        Buy/Sell
+        </h2>
+            <div class="mdc-form-field">
+              <div class="mdc-radio">
+                <input class="mdc-radio__native-control" type="radio" value="buy" id="buy" name="transactionType">
+                <div class="mdc-radio__background">
+                  <div class="mdc-radio__outer-circle"></div>
+                  <div class="mdc-radio__inner-circle"></div>
+                </div>
+                <div class="mdc-radio__ripple"></div>
+              </div>
+              <label for="buy">Buy</label>
+            </div> 
+            <div class="mdc-form-field">
+              <div class="mdc-radio">
+                <input class="mdc-radio__native-control" type="radio" value="sell" id="sell" name="transactionType" checked>
+                <div class="mdc-radio__background">
+                  <div class="mdc-radio__outer-circle"></div>
+                  <div class="mdc-radio__inner-circle"></div>
+                </div>
+                <div class="mdc-radio__ripple"></div>
+              </div>
+              <label for="sell">Sell</label>
+            </div> 
+        
+        
+        
+          <div class="mdc-text-field mdc-text-field--no-label">
+          <input id="symbol" type="text" class="mdc-text-field__input" placeholder="Enter symbol" aria-label="Label">
+          <div class="mdc-line-ripple"></div>
+        </div>        
+      <div class="mdc-dialog__content" id="my-dialog-content">
+        <div class="mdc-text-field mdc-text-field--no-label">
+          <input id="shares" type="text" class="mdc-text-field__input" placeholder="Enter number of shares" aria-label="Label">
+          <div class="mdc-line-ripple"></div>
+        </div>      
+          
+          
+          
+          
+          
+
+          
+          
+          
+          
+      </div>
+      <footer class="mdc-dialog__actions">
+        <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="no">
+          <span class="mdc-button__label">Cancel</span>
+        </button>
+        <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="yes">
+          <span class="mdc-button__label">Submit</span>
+        </button>
+      </footer>
+    </div>
+  </div>
+  <div class="mdc-dialog__scrim"></div>
+</div>      
+      
+      
+      
+      
+    <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+    <script>
+      var db = new Dexie("finapp");
+      db.version(1).stores({
+          settings: 'name'
+      });
+        
+        
+      let apiEndpoint = "";  
+      let targetCustomerId = 0, targetAccountId, targetEmployeeId = 0, targetTransactionId;
+        
+      db.settings.get("apiDomain").then(function(setting) {
+        if (setting) {
+            apiEndpoint = setting.value;
+        } else {
+            db.settings.put({"name":"apiDomain", "value":"none"})
+        }
+          
+      });
+      
+        
+
+    </script>
+
+
+    <script src="script.js"></script>
+    <script>
+        
+      window.mdc.autoInit();
+      // mdc.drawer.MDCDrawer.attachTo(document.querySelector('.mdc-drawer')); 
+      const drawer = document.querySelector('.mdc-drawer').MDCDrawer;
+      // console.log(drawer);
+      const modalTransaction = document.querySelector('#modalTransaction').MDCDialog;
+    
+      // open drawer on nav icon
+      document.getElementsByClassName("mdc-top-app-bar__navigation-icon")[0].addEventListener("click", function(){
+        drawer.open = true;
+      });
+    
+      
+      // close drawer on selection
+//       let navs = document.getElementsByClassName("mdc-list-item");
+      
+//       for (let i = 0; i < navs.length; i++) {
+//         navs[i].addEventListener("click", function() {
+//           drawer.open = false;
+//         })
+//       };
+        
+        $("nav.mdc-list a.mdc-list-item").on("click", function(e) {
+           console.log($(this))
+           let file = "page-content/" + $(this).attr("href").replace("#","") + ".html";
+           $("#content").load(file);
+           drawer.open = false;
+            
+            
+            
+        });
+        
+        $('[data-mdc-dialog-action="yes"]').on("click", function(e) {
+            let url = apiEndpoint + "transactions";
+            let requestBody = {
+                "account": targetAccountId,
+                "symbol": $("#symbol").val(),
+                "shares": $("#shares").val(),
+                "type": $("input[name='transactionType']:checked").val()
+            }
+            $.ajax({
+                    method: "POST",
+                    contentType: "application/json",
+                    url: url,
+                    data: JSON.stringify(requestBody)
+                  })
+                    .done(function(response) { 
+                        console.log(response);
+                    });         
+            
+            
+        })
+
+        
+        
+
+    </script>
+
+
+  <script>
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: -34.397, lng: 150.644},
+          zoom: 8
+        });
+      }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCIK4Z-9uO_KmcNAexRKsIpCZrgI-I5aA&callback=initMap"
+    async defer></script>
+
+
+    <script>
+              // if ('serviceWorker' in navigator) {
+              //   navigator.serviceWorker
+              //            .register('./sw.js');
+              // }
+      
+      </script>
+
+  </body>
+</html>

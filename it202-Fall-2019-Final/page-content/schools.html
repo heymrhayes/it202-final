@@ -1,0 +1,84 @@
+<div class="mdc-typography--headline3">Search Schools</div>
+
+
+<!-- add a select control to let users choose a school category;  you can hard-code the options or dynamically populate them from the primaryCategories variable below-->
+
+
+<button id="searchSchools" class="mdc-button mdc-button--raised">
+  <div class="mdc-button__ripple"></div>
+  <i class="material-icons mdc-button__icon" aria-hidden="true">search</i>
+  <span class="mdc-button__label">Search</span>
+</button>
+
+
+<div id="resultCount" class="mdc-typography--body1">
+
+</div>
+
+
+<ul id="listSchools" class="mdc-list demo-list mdc-list--two-line mdc-list--avatar-list" id="customers">
+    <li class="mdc-list-item mdc-ripple-upgraded template">
+        <span class="mdc-list-item__text">
+            <span class="mdc-list-item__primary-text"></span>
+            <span class="mdc-list-item__secondary-text"></span></span></li>
+    <li role="separator" class="mdc-list-divider template"></li>
+  </ul> 
+
+
+
+
+<script>
+  var primaryCategories = [{"primary_category":"ES"}
+,{"primary_category":"HS"}
+,{"primary_category":"MS"}];
+
+  let endpoint = "https://data.cityofchicago.org/resource/kh4r-387c.json?";
+
+
+  let limit = 50;
+
+
+
+  $("button#searchSchools").off("click");
+
+  $("button#searchSchools").on("click", (e) => {
+    getSchools();
+  });
+
+
+
+  let getSchools = () => {
+    let url = endpoint + "$limit=" + limit;
+
+    let divider = $("ul#listSchools .mdc-list-divider.template");
+
+    $.get(url, (response) => {
+      console.log(response);
+      $.each(response, (i,v) => {
+        // clone template
+        let clone = $("ul#listSchools .mdc-list-item.template").clone();
+
+        let dividerClone = divider.clone();
+
+        // remove template class
+        clone.removeClass("template");
+        dividerClone.removeClass("template");
+
+        // set values
+        clone.find(".mdc-list-item__primary-text").text(v.long_name)
+
+
+        // append to list
+        $("ul#listSchools").append(dividerClone);
+        
+        
+        $("ul#listSchools").append(clone);
+
+      });
+    });
+  }
+
+
+
+
+</script>
